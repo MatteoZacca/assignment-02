@@ -6,6 +6,7 @@ import io.vertx.core.file.FileSystem;
 
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DependencyAnalyzerLib {
 
@@ -40,9 +41,20 @@ public class DependencyAnalyzerLib {
                 });
     }
 
+    public Future<PackageDepsReport> getPackageDependencies(String dirPath) {
+        Vertx vertx = Vertx.vertx();
+        FileSystem fs = vertx.fileSystem();
 
-
-    public Future<PackageDepsReport> getPackageDependencies(String dirPath) {}
+        return fs.readDir(dirPath)
+                .compose(paths -> {
+                    // per ogni file nella cartella chiamo getClassDependencies
+                    List<Future<ClassDepsReport>> futures = paths.stream()
+                            .map(this::getClassDependencies)
+                            .collect(Collectors.toList());
+                    return Future.all(futures);
+                })
+                .map(composite -> new PackageDepsReport(composite.list()));
+    }
 
     public Future<ProjectDepsReport> getProjectDependencies(String rootPath) {}
 
