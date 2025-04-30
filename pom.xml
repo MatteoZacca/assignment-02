@@ -15,12 +15,25 @@
     <maven.compiler.release>17</maven.compiler.release>
   </properties>
 
+  <!-- Java Parser dependencies -->
   <dependencies>
-	<dependency>
-    	<groupId>com.github.javaparser</groupId>
-    	<artifactId>javaparser-symbol-solver-core</artifactId>
-    	<version>3.26.4</version>
-	</dependency>
+	  <dependency>
+    	  <groupId>com.github.javaparser</groupId>
+    	  <artifactId>javaparser-symbol-solver-core</artifactId>
+    	  <version>3.26.4</version>
+	  </dependency>
+      <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
+      <dependency>
+          <groupId>io.vertx</groupId>
+          <artifactId>vertx-core</artifactId>
+          <version>4.5.14</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/io.vertx/vertx-web -->
+      <dependency>
+          <groupId>io.vertx</groupId>
+          <artifactId>vertx-web</artifactId>
+          <version>4.5.14</version>
+      </dependency>
   </dependencies>
 
   <build>

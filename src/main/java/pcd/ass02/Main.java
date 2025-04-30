@@ -20,14 +20,15 @@ public class Main {
 		File file = new File("src/main/java/pcd/ass02/MyClass.java");
 		
 		CompilationUnit cu = StaticJavaParser.parse(file);
-				
+
+        // creazione della calsse anonima che estende VoidVisitorAdapter
 		new VoidVisitorAdapter<Object>() {
             
 			/**
 			 *  Finding a type in a class/interface declaration 
 			 */			
 			public void visit(ClassOrInterfaceDeclaration n, Object arg) {
-                super.visit(n, arg);
+                super.visit(n, arg); // continua la visita per i figli del nodo corrente
                 System.out.println("type " + n.getName() + " (class/int decl)");
             }
             
