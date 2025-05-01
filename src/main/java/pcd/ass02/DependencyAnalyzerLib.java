@@ -3,6 +3,7 @@ package pcd.ass02;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
+import io.vertx.core.file.impl.FileSystemImpl;
 
 import java.io.File;
 import java.util.List;
@@ -10,9 +11,14 @@ import java.util.stream.Collectors;
 
 public class DependencyAnalyzerLib {
 
-    public record ClassDepsReport(List<String> dependencies) {}
-    public record PackageDepsReport(List<ClassDepsReport> classReports) {}
-    public record ProjectDepsReport(List<PackageDepsReport> packageReports) {}
+    public record ClassDepsReport(List<String> dependencies) {
+    }
+
+    public record PackageDepsReport(List<ClassDepsReport> classReports) {
+    }
+
+    public record ProjectDepsReport(List<PackageDepsReport> packageReports) {
+    }
 
     //private final Vertx vertx;
 
@@ -56,6 +62,21 @@ public class DependencyAnalyzerLib {
                 .map(composite -> new PackageDepsReport(composite.list()));
     }
 
-    public Future<ProjectDepsReport> getProjectDependencies(String rootPath) {}
+    public Future<ProjectDepsReport> getProjectDependencies(String rootPath) {
+        Vertx vertx = Vertx.vertx();
+        FileSystem fs = vertx.fileSystem();
 
+        // Legge tutti i packages ricorsivamente
+        return fs.readDir(rootPath, new FileSystemImpl.ReadOptions().setRecursive(true))
+                .compose(allPaths -> {
+                    List<String> javaFiles = allPaths.stream()
+                            .filter(p -> p.endsWith(".java"))
+                            .collect(Collectors.toList());
+                    List<Future<ClassDepsReport>> futures = javaFiles.stream()
+                            .map(this::getClassDependencies)
+                            .collect(Collectors.toList());
+                    return Future.all(futures);
+                })
+                .map(composite -> new ProjectDepsReport(composite.list()));
+    }
 }
