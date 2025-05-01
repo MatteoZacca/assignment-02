@@ -1,11 +1,16 @@
 package pcd.ass02;
 
+import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.impl.FileSystemImpl;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,5 +83,23 @@ public class DependencyAnalyzerLib {
                     return Future.all(futures);
                 })
                 .map(composite -> new ProjectDepsReport(composite.list()));
+    }
+
+    /* Isolo la logica di "visita" dell'AST in un metodo sincrono che prende un File e
+    restituisce un ClassDepsReport */
+    private ClassDepsReport parseClassSync(File file) throws Exception {
+        CompilationUnit cu = StaticJavaParser.parse(file);
+        List<String> deps = new ArrayList<>();
+
+        new VoidVisitorAdapter<Void>() {
+            @Override
+            public void visit(ImportDeclaration n, Void arg) {
+                super.visit(n, arg);
+                deps.add(n.getNameAsString());
+            }
+            // Aggiungi altri visit() se necessario
+        }.visit(cu, null);
+
+        return new ClassDepsReport(deps);
     }
 }
