@@ -16,11 +16,14 @@ import java.util.stream.Collectors;
 
 public class DependencyAnalyzerLib {
 
-    public record ClassDepsReport(List<String> dependencies) {}
+    public record ClassDepsReport(List<String> dependencies) {
+    }
 
-    public record PackageDepsReport(List<ClassDepsReport> classReports) {}
+    public record PackageDepsReport(List<ClassDepsReport> classReports) {
+    }
 
-    public record ProjectDepsReport(List<PackageDepsReport> packageReports) {}
+    public record ProjectDepsReport(List<PackageDepsReport> packageReports) {
+    }
 
     private final Vertx vertx;
 
@@ -36,32 +39,31 @@ public class DependencyAnalyzerLib {
         return fs.exists(path)
                 .compose(exists -> exists ?
                         vertx.executeBlocking(promise -> {
-                    try {
-                        ClassDepsReport report = parseClassSync(new File(path));
-                        promise.complete(report);
-                    } catch (Exception ex) {
-                        promise.fail(ex);
-                    }
-                })
+                            try {
+                                ClassDepsReport report = parseClassSync(new File(path));
+                                promise.complete(report);
+                            } catch (Exception ex) {
+                                promise.fail(ex);
+                            }
+                        })
                         : Future.failedFuture(new IllegalArgumentException("File non trovato: " + path)));
     }
 
     public Future<PackageDepsReport> getPackageDependencies(String dirPath) {
         FileSystem fs = vertx.fileSystem();
+        ;
 
         return fs.readDir(dirPath)
                 .compose(paths -> {
-                    // filtro solo i file .java
                     List<String> javaFiles = paths.stream()
                             .filter(p -> p.endsWith(".java"))
                             .collect(Collectors.toList());
-                    // per ogni file .java chiamo getClassDependencies
+
                     List<Future<ClassDepsReport>> futures = javaFiles.stream()
                             //.map(file -> this.getClassDependencies(file))
                             .map(this::getClassDependencies)
                             .collect(Collectors.toList()); // raccoglie i
-                    // Future<ClassDepsReport> in una lista chiamata futures.
-                    // attendo che tutte le analisi delle classi siano completate
+                    // Future<ClassDepsReport> in una lista chiamata futures
                     return Future.all(futures); // restituisce un Future<CompositeFuture>
                 })
                 .map(composite -> new PackageDepsReport(composite.list()));
@@ -70,19 +72,17 @@ public class DependencyAnalyzerLib {
     }
 
     public Future<ProjectDepsReport> getProjectDependencies(String rootPath) {
-        FileSystem fs = vertx.fileSystem();
 
-        // Legge tutti i packages ricorsivamente
-        return fs.readDir(rootPath,)//new FileSystem.ReadOptions().setRecursive(true))
-                .compose(allPaths -> {
-                    List<String> javaFiles = allPaths.stream()
-                            .filter(p -> p.endsWith(".java"))
-                            .collect(Collectors.toList());
+        return readDirRecursive(rootPath)
+                // perlustro ricorsivamente tutte le subdirectory e ottengo la lista di file '.java'
+                .compose(javaFiles -> {
+                    // per ogni file '.java' ricorsivamente trovato chiamo getClassDependencies
                     List<Future<ClassDepsReport>> futures = javaFiles.stream()
                             .map(this::getClassDependencies)
                             .collect(Collectors.toList());
                     return Future.all(futures);
                 })
+                // quando tutte le classi sono state analizzate, incapsulo i report in ProjectDepsReport
                 .map(composite -> new ProjectDepsReport(composite.list()));
     }
 
@@ -103,4 +103,50 @@ public class DependencyAnalyzerLib {
 
         return new ClassDepsReport(deps);
     }
+
+    // ricorsivo che restituisce tutti i file '.java' a partire da dirPath
+    private Future<List<String>> readDirRecursive(String dirPath) {
+        FileSystem fs = vertx.fileSystem();
+
+        return fs.readDir(dirPath)
+                .compose(entries -> {
+                    List<String> javaFiles = new ArrayList<>();
+                    List<Future<List<String>>> subdirFutures = new ArrayList<>();
+
+                    for (String entry : entries) {
+                        if (entry.endsWith(".java")) {
+                            javaFiles.add(entry);
+                        } else if (isDirectory(entry)) {
+                            subdirFutures.add(readDirRecursive(entry));
+                        }
+                    }
+
+                    if (subdirFutures.isEmpty()) {
+                        return Future.succeededFuture(javaFiles);
+                    } else {
+                        return Future
+                                .all(subdirFutures)
+                                .map(composite -> {
+                                    // <List<String>> è necessaria per indicare esplicitamente
+                                    // il tipo dei risultati attesi dal CompositeFuture. Senza questa
+                                    // annotazione, il compilatore non può inferire automaticamnete il
+                                    // tipo corretto
+                                    // Codice equivalente:
+                                    /*
+                                    List<List<String>> listOfLists = composite.<List<String>>list();
+                                    for (List<String> subList : listOfLists) {
+                                    javaFiles.addAll(subList);
+                                    }
+                                    */
+                                    composite.<List<String>>list().forEach(javaFiles::addAll);
+                                    return javaFiles;
+                                });
+                    }
+                });
+    }
+
+    private boolean isDirectory(String path) {
+        return new File(path).isDirectory();
+    }
+
 }
