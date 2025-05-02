@@ -7,7 +7,6 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.file.FileSystemOptions;
 
 import java.io.File;
 import java.util.ArrayList;
