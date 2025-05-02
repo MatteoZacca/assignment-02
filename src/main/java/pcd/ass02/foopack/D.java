@@ -1,6 +1,8 @@
 package pcd.ass02.foopack;
 
-public class D {
+import java.lang.Thread;
+
+public class D extends Thread{
 
 	public void m(){}
 }
