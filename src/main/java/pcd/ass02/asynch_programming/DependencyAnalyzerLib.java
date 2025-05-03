@@ -1,4 +1,4 @@
-package pcd.ass02;
+package pcd.ass02.asynch_programming;
 
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
@@ -10,6 +10,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.file.FileSystem;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,18 +30,21 @@ public class DependencyAnalyzerLib {
 
     public DependencyAnalyzerLib() {
         this.vertx = Vertx.vertx(); // crea un'istanza di Vert.x
-
     }
 
     // getClassDependencies analizza asincronamente le dipendenze di una classe Java.
     // Il parametro path è una stringa che rappresenta il percorso al file Java
     public Future<ClassDepsReport> getClassDependencies(String path) {
+
         FileSystem fs = vertx.fileSystem();
 
         return fs.exists(path)
                 .compose(exists -> exists ?
                         vertx.executeBlocking(promise -> {
                             try {
+                                if (path == null || path.isBlank()) {
+                                    throw new FileNotFoundException("Percorso vuoto");
+                                }
                                 ClassDepsReport report = parseClassSync(new File(path));
                                 promise.complete(report);
                             } catch (Exception ex) {

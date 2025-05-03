@@ -1,9 +1,9 @@
-package pcd.ass02;
+package pcd.ass02.asynch_programming;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 
-import pcd.ass02.DependencyAnalyzerLib.*;
+import pcd.ass02.asynch_programming.DependencyAnalyzerLib.*;
 
 public class TestDependencyAnalyzerLib {
     public static void main(String[] args) throws Exception {

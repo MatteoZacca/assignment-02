@@ -1,4 +1,4 @@
-package pcd.ass02.foopack;
+package pcd.ass02.asynch_programming.foopack;
 
 import java.lang.Thread;
 
