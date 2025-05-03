@@ -12,6 +12,7 @@ public class TestDependencyAnalyzerLib {
         testGetClassDependencies("");
 
         testGetPackageDependencies("C:\\Users\\zacca\\Desktop\\MAGISTRALE INFORMATICA\\PRIMO ANNO\\SECONDO SEMESTRE\\Programmazione Concorrente e Distribuita\\Assignments\\Assignment#02\\assignment-02\\src\\main\\java\\pcd\\ass02\\foopack");
+        testGetPackageDependencies(".");
 
         testGetProjectDependencies("C:\\Users\\zacca\\Desktop\\MAGISTRALE INFORMATICA\\PRIMO ANNO\\SECONDO SEMESTRE\\Programmazione Concorrente e Distribuita\\Assignments\\Assignment#02\\assignment-02\\src\\main\\java\\pcd\\ass02\\foopack");
         testGetProjectDependencies(".");

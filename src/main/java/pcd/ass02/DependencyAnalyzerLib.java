@@ -1,5 +1,6 @@
 package pcd.ass02;
 
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -28,6 +29,7 @@ public class DependencyAnalyzerLib {
 
     public DependencyAnalyzerLib() {
         this.vertx = Vertx.vertx(); // crea un'istanza di Vert.x
+
     }
 
     // getClassDependencies analizza asincronamente le dipendenze di una classe Java.
@@ -88,6 +90,14 @@ public class DependencyAnalyzerLib {
     /* Isolo la logica di "visita" dell'AST in un metodo sincrono che prende un File e
     restituisce un ClassDepsReport */
     private ClassDepsReport parseClassSync(File file) throws Exception {
+        /* Configuro StaticJavaParser poichè altrimenti JavaParser, di default, non è
+        impostato su un Language Level che supporti le record declaration (introdotte da
+        Java 14). Inserendo la configurazione nel costruttore, non si otteneva l'output
+        desiderato. */
+        ParserConfiguration config = new ParserConfiguration()
+                .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
+        StaticJavaParser.setConfiguration(config);
+
         CompilationUnit cu = StaticJavaParser.parse(file);
         List<String> deps = new ArrayList<>();
 
@@ -97,7 +107,6 @@ public class DependencyAnalyzerLib {
                 super.visit(n, arg);
                 deps.add(n.getNameAsString());
             }
-            // Aggiungi altri visit() se necessario
         }.visit(cu, null);
 
         return new ClassDepsReport(deps);
