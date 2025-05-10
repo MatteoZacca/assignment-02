@@ -34,6 +34,22 @@
           <artifactId>vertx-web</artifactId>
           <version>4.5.14</version>
       </dependency>
+      <dependency>
+          <groupId>io.reactivex.rxjava3</groupId>
+          <artifactId>rxjava</artifactId>
+          <version>3.1.10</version>
+      </dependency>
+      <!-- GraphStream -->
+      <dependency>
+          <groupId>org.graphstream</groupId>
+          <artifactId>gs-core</artifactId>
+          <version>2.0</version> <!-- Verifica l'ultima versione -->
+      </dependency>
+      <dependency>
+          <groupId>org.graphstream</groupId>
+          <artifactId>gs-ui-swing</artifactId>
+          <version>2.0</version>
+      </dependency>
   </dependencies>
 
   <build>
