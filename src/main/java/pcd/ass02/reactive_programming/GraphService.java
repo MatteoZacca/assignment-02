@@ -31,9 +31,9 @@ public class GraphService {
     // Inizializza la scena JavaFX con SmartGraphPanel
     private void initFX() {
         smartPanel = new SmartGraphPanel<>(graph);
-        smartPanel.init();
         Scene scene = new Scene(smartPanel, 600, 400);
         fxPanel.setScene(scene);
+        smartPanel.init();
     }
 
     /**
@@ -50,9 +50,31 @@ public class GraphService {
     public void addDependency(Dependency dep) {
         String source = dep.getSource();
         String target = dep.getTarget();
+        String edgeLabel = source + "->" + target;
 
-        graph.insertVertex(source);
-        graph.insertVertex(target);
-        graph.insertEdge(source, target, source + "->" + target);
+        Platform.runLater(() -> {
+            // 1) verifica/crea i vertici (come prima)
+            boolean hasSource = graph.vertices().stream()
+                    .map(v -> v.element())
+                    .anyMatch(e -> e.equals(source));
+            if (!hasSource) {
+                graph.insertVertex(source);
+            }
+
+            boolean hasTarget = graph.vertices().stream()
+                    .map(v -> v.element())
+                    .anyMatch(e -> e.equals(target));
+            if (!hasTarget) {
+                graph.insertVertex(target);
+            }
+
+            // 2) VERIFICA SE L’ARCO ESISTE GIÀ
+            boolean hasEdge = graph.edges().stream()
+                    .map(e -> e.element())
+                    .anyMatch(el -> el.equals(edgeLabel));
+            if (!hasEdge) {
+                graph.insertEdge(source, target, edgeLabel);
+            }
+        });
     }
 }
