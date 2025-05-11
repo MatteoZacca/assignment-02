@@ -27,7 +27,10 @@ public class DependencyAnalyzer {
     private void setupPipeline() {
         fileSubject
                 .subscribeOn(Schedulers.io())
-                .doOnNext(path -> filesProcessed++)
+                .doOnNext(path -> {
+                    System.out.println("Analyzing: " + path);
+                    filesProcessed++;
+                })
                 .flatMap(path -> ParserService.parseFile(path)
                         .toObservable()
                         .flatMapIterable(list ->list))
