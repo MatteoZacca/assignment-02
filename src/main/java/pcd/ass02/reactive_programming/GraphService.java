@@ -1,36 +1,58 @@
 package pcd.ass02.reactive_programming;
 
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.implementations.SingleGraph;
+import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
+import com.brunomnsilva.smartgraph.graph.Graph;
+import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
 
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
 
+import javax.swing.*;
 
+/**
+ * Service per la visualizzazione del grafo usando SmartGraph (JavaFX) integrato in Swing.
+ */
 public class GraphService {
 
-    private final Graph graph;
-
+    private final Graph<String, String> graph;
+    private final JFXPanel fxPanel;
+    private SmartGraphPanel<String,String> smartPanel;
 
     public GraphService() {
-        // configura il renderer di GraphStream per Swing
-        //System.setProperty("org.graphstream.ui", "swing");
+        // Inizializza il container JavaFX all'interno di Swing
+        fxPanel = new JFXPanel();
+        graph = new DigraphEdgeList<>();
 
-        // crea un grafo con nome e abilita creazione automatica dei nodi
-        graph = new SingleGraph("Dipendenze");
-        graph.setStrict(false);
-        graph.setAutoCreate(true);
+        // Avvia la piattaforma JavaFX
+        Platform.runLater(() -> initFX());
+    }
 
-        // visualizza il grafo in una finestra separata
-        graph.display();
+    // Inizializza la scena JavaFX con SmartGraphPanel
+    private void initFX() {
+        smartPanel = new SmartGraphPanel<>(graph);
+        smartPanel.init();
+        Scene scene = new Scene(smartPanel, 600, 400);
+        fxPanel.setScene(scene);
     }
 
     /**
-     * Aggiunge una dipendenza al grafo. Ogni dipendenza è un arco diretto
-     * da 'source' a 'target'. I nodi vengono creati automaticamente se mancanti.
+     * Restituisce il pannello Swing che ospita la visualizzazione JavaFX.
+     */
+    public JComponent getViewPanel() {
+        return fxPanel;
+    }
+
+    /**
+     * Aggiunge una dipendenza al grafo e aggiorna la vista. Utilizza l'oggetto Dependency
+     * che contiene source e target
      */
     public void addDependency(Dependency dep) {
-        String edgeId = dep.getSource() + "->" + dep.getTarget();
-        if (graph.getEdge(edgeId) == null) {
-            graph.addEdge(edgeId, dep.getSource(), dep.getTarget(), true);
-        }
+        String source = dep.getSource();
+        String target = dep.getTarget();
+
+        graph.insertVertex(source);
+        graph.insertVertex(target);
+        graph.insertEdge(source, target, source + "->" + target);
     }
 }

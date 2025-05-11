@@ -42,7 +42,6 @@ public class DependencyAnalyzer {
                 .doOnNext(d -> dependenciesFound++)
                 .subscribe(dep -> {
                     graphService.addDependency(dep);
-                            // qui si potrebbero notificare listener per aggiornare la GUI
                         },
                         Throwable::printStackTrace,
                         () -> System.out.println("Elaborazione delle dipendenze completata")

@@ -15,6 +15,7 @@ public class MainFrame extends JFrame {
     private final JProgressBar progressBar = new JProgressBar();
 
     private final DependencyAnalyzer analyzer = new DependencyAnalyzer();
+    private final GraphService graphService = new GraphService();
     private Path selectedRoot;
 
     public MainFrame() {
@@ -33,11 +34,22 @@ public class MainFrame extends JFrame {
         logArea.setEditable(false);
         logArea.setBorder(new EmptyBorder(4, 4, 4, 4));
         JScrollPane scrollPanel = new JScrollPane(logArea);
+        // SmartGraph view:
+        JComponent graphView = graphService.getViewPanel();
 
         JPanel statsPanel = new JPanel(new GridLayout(1, 3, 10, 0));
         statsPanel.add(lblClasses);
         statsPanel.add(lblDeps);
         statsPanel.add(progressBar);
+
+
+        // Dividi la finestra in log e grafo
+        JSplitPane splitPane = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT,
+                scrollPanel,
+                graphView
+        );
+        splitPane.setResizeWeight(0.3);
 
         add(topPanel, BorderLayout.NORTH);
         add(scrollPanel, BorderLayout.CENTER);
@@ -75,7 +87,7 @@ public class MainFrame extends JFrame {
         // Esempio di polling: aggiorna stats periodicamente
         new Timer(200, evt -> {
             lblClasses.setText("Classi/Interfacce analizzate: " + analyzer.getFilesProcessed());
-            lblDeps   .setText("Dipendenze trovate: " + analyzer.getDependenciesFound());
+            lblDeps.setText("Dipendenze trovate: " + analyzer.getDependenciesFound());
             if (!progressBar.isIndeterminate()) ((Timer)evt.getSource()).stop();
         }).start();
     }
