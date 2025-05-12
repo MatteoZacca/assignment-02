@@ -40,7 +40,10 @@ public class DependencyAnalyzer {
                 .subscribe(
                         depSubject::onNext, //value -> depSubject.onNext(value);
                         Throwable::printStackTrace,
-                        () -> System.out.println("Parsing completato")
+                        () -> {
+                            System.out.println("Parsing completato");
+                            depSubject.onComplete();
+                        }
                 );
 
         depSubject
