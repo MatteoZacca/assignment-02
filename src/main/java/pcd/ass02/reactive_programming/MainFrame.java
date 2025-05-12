@@ -1,5 +1,7 @@
 package pcd.ass02.reactive_programming;
 
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -14,8 +16,8 @@ public class MainFrame extends JFrame {
     private final JLabel lblDeps    = new JLabel("Dipendenze trovate: 0");
     private final JProgressBar progressBar = new JProgressBar();
 
-    private final DependencyAnalyzer analyzer = new DependencyAnalyzer();
     private final GraphService graphService = new GraphService();
+    private final DependencyAnalyzer analyzer = new DependencyAnalyzer(graphService);
     private Path selectedRoot;
 
     public MainFrame() {
@@ -52,7 +54,7 @@ public class MainFrame extends JFrame {
         splitPane.setResizeWeight(0.3);
 
         add(topPanel, BorderLayout.NORTH);
-        add(scrollPanel, BorderLayout.CENTER);
+        add(splitPane, BorderLayout.CENTER);
         add(statsPanel, BorderLayout.SOUTH);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -82,7 +84,18 @@ public class MainFrame extends JFrame {
         log("Avvio analisi...");
 
         // Avvia l'analisi sulla directory selezionata sfruttando logica reattiva
-            analyzer.processDirectory(selectedRoot);
+        analyzer.processDirectory(selectedRoot);
+        this.repaint();
+
+        /*
+        analyzer.depStream()              // espongo depSubject con un getter pubblico
+                .ignoreElements()                 // mi interessa solo onComplete
+                .observeOn(Schedulers.single())   // eseguo il callback su un thread qualunque
+                .subscribe(() -> SwingUtilities.invokeLater(() -> {
+                    progressBar.setIndeterminate(false);
+                    log("Elaborazione delle dipendenze completata");
+                }));
+         */
 
         // Crea un timer che esegue un'azione ogni 200 ms
         new Timer(200, evt -> {

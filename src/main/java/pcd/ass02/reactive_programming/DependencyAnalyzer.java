@@ -2,7 +2,6 @@ package pcd.ass02.reactive_programming;
 
 
 import io.reactivex.rxjava3.subjects.PublishSubject;
-import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import java.nio.file.Path;
@@ -16,11 +15,12 @@ public class DependencyAnalyzer {
     private final PublishSubject<Path> fileSubject = PublishSubject.create();
     private final PublishSubject<Dependency> depSubject = PublishSubject.create();
 
-    private final GraphService graphService = new GraphService();
+    private final GraphService graphService;
     private int filesProcessed = 0;
     private int dependenciesFound = 0;
 
-    public DependencyAnalyzer() {
+    public DependencyAnalyzer(GraphService graphService) {
+        this.graphService = graphService;
         setupPipeline();
     }
 
@@ -54,6 +54,7 @@ public class DependencyAnalyzer {
                 })
                 .subscribe(dep -> {
                     graphService.addDependency(dep);
+
                         },
                         Throwable::printStackTrace,
                         () -> System.out.println("Elaborazione delle dipendenze completata")
@@ -68,6 +69,13 @@ public class DependencyAnalyzer {
                         fileSubject::onComplete
                 );
     }
+
+    /*
+    public Observable<Dependency> depStream() {
+        return depSubject.hide();
+    }
+    */
+
 
     public int getFilesProcessed() {
         return filesProcessed;
