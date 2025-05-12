@@ -45,7 +45,10 @@ public class DependencyAnalyzer {
 
         depSubject
                 .observeOn(Schedulers.computation())
-                .doOnNext(d -> dependenciesFound++)
+                .doOnNext(d -> {
+                    dependenciesFound++;
+                    System.out.println("Found dependency: " + d);
+                })
                 .subscribe(dep -> {
                     graphService.addDependency(dep);
                         },
