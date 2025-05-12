@@ -26,13 +26,16 @@ public class DependencyAnalyzer {
 
     private void setupPipeline() {
         fileSubject
+                // sposto l'esecuzione della pipeline su un thread I/O
                 .subscribeOn(Schedulers.io())
+                // doOnNext permette di eseguire un'azione ogni volta che un elemento passa
+                // attraverso il flusso reattivo, senza modificarlo o interrompere il flusso
                 .doOnNext(path -> {
                     System.out.println("Analyzing: " + path);
-                    filesProcessed++;
                 })
                 .flatMap(path -> ParserService.parseFile(path)
                         .toObservable()
+                        .doOnNext(listOfDeps -> filesProcessed++)
                         .flatMapIterable(list ->list))
                 .subscribe(
                         depSubject::onNext, //value -> depSubject.onNext(value);

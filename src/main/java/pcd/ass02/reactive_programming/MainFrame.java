@@ -76,18 +76,20 @@ public class MainFrame extends JFrame {
     }
 
     private void onStart(ActionEvent event) {
-        btnStart.setEnabled(false);
+        btnStart.setEnabled(false); // disabilito il pulsante di avvio per evitare che l'utente
+        // possa cliccarlo nuovamente mentre il programma è in esecuzione
         progressBar.setIndeterminate(true);
         log("Avvio analisi...");
 
-        // Avvia l'analisi sulla directory selezionata
-        // Avvia il flusso reattivo
+        // Avvia l'analisi sulla directory selezionata sfruttando logica reattiva
             analyzer.processDirectory(selectedRoot);
 
-        // Esempio di polling: aggiorna stats periodicamente
+        // Crea un timer che esegue un'azione ogni 200 ms
         new Timer(200, evt -> {
             lblClasses.setText("Classi/Interfacce analizzate: " + analyzer.getFilesProcessed());
             lblDeps.setText("Dipendenze trovate: " + analyzer.getDependenciesFound());
+            // quando progressBar non è più indeterminata, indicando che il processo è completato,
+            // il timer si interrompe
             if (!progressBar.isIndeterminate()) ((Timer)evt.getSource()).stop();
         }).start();
     }
@@ -101,7 +103,11 @@ public class MainFrame extends JFrame {
 
 
     public static void main(String[] args) {
-        System.setProperty("org.graphstream.ui", "swing");
+        // SwingUtilities.invokeLater(Runnable runnable): questo metodo è utilizzato per
+        // assicurarsi che il codice passato come Runnable venga eseguito nel thread
+        // dell'Event Dispatch Thread, che è responsabile della gestione dell'interfaccia
+        // grafica in Swing. In Swing, tutte le operazioni che modificano l'interfaccia
+        // utente devono essere eseguite nel thread EDT per evitare problemi di concorrenza
         SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
     }
 
