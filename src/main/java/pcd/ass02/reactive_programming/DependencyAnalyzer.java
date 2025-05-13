@@ -34,11 +34,10 @@ public class DependencyAnalyzer {
                     System.out.println("Analyzing: " + path);
                 })
                 .flatMap(path -> ParserService.parseFile(path)
-                        .toObservable()
                         .doOnNext(listOfDeps -> filesProcessed++)
                         .flatMapIterable(list ->list))
                 .subscribe(
-                        depSubject::onNext, //value -> depSubject.onNext(value);
+                        depSubject::onNext, // value -> depSubject.onNext(value);
                         Throwable::printStackTrace,
                         () -> {
                             System.out.println("Parsing completato");
@@ -52,10 +51,7 @@ public class DependencyAnalyzer {
                     dependenciesFound++;
                     System.out.println("Found dependency: " + d);
                 })
-                .subscribe(dep -> {
-                    graphService.addDependency(dep);
-
-                        },
+                .subscribe(graphService::addDependency,
                         Throwable::printStackTrace,
                         () -> System.out.println("Elaborazione delle dipendenze completata")
                 );

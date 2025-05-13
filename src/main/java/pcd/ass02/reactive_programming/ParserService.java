@@ -7,7 +7,6 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.Single;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,12 +35,13 @@ public class ParserService {
     /**
      * Analizza un singolo file Java e restituisce un Single con la lista delle dipendenze trovate.
      */
-    public static Single<List<Dependency>> parseFile(Path file) {
-        return Single.create(emitter -> {
+    public static Observable<List<Dependency>> parseFile(Path file) {
+        return Observable.create(emitter -> {
             try {
                 CompilationUnit cu = StaticJavaParser.parse(file);
                 List<Dependency> deps = extractDependencies(file.getFileName().toString(), cu);
-                emitter.onSuccess(deps);
+                emitter.onNext(deps);
+                emitter.onComplete();
             } catch (Exception e) {
                 emitter.onError(e);
             }
@@ -58,16 +58,16 @@ public class ParserService {
 
         // 1) Import
         for (ImportDeclaration imp : cu.findAll(ImportDeclaration.class)) {
-            deps.add(new Dependency(source, imp.getName().getIdentifier()));
+            deps.add(new Dependency(source, imp.getName().toString()));
         }
 
         // 2) Extends / Implements
         for (ClassOrInterfaceDeclaration cid : cu.findAll(ClassOrInterfaceDeclaration.class)) {
             for(ClassOrInterfaceType ext : cid.getExtendedTypes()) {
-                deps.add(new Dependency(source, ext.getNameAsString()));
+                deps.add(new Dependency(source, "Extends: " + ext.getName().toString()));
             }
             for (ClassOrInterfaceType impl : cid.getImplementedTypes()) {
-                deps.add(new Dependency(source, impl.getNameAsString()));
+                deps.add(new Dependency(source, "Implements: " + impl.getName().toString()));
             }
         }
 

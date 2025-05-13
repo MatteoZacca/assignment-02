@@ -12,8 +12,8 @@ public class MainFrame extends JFrame {
     private final JButton btnSelect = new JButton("Seleziona Cartella");
     private final JButton btnStart  = new JButton("Start");
     private final JTextArea logArea  = new JTextArea(10, 50);
-    private final JLabel lblClasses = new JLabel("Classi/Interfacce analizzate: 0");
-    private final JLabel lblDeps    = new JLabel("Dipendenze trovate: 0");
+    private final JLabel lblClasses = new JLabel("Classi/Interfacce analizzate: ");
+    private final JLabel lblDeps    = new JLabel("Dipendenze trovate: ");
     private final JProgressBar progressBar = new JProgressBar();
 
     private final GraphService graphService = new GraphService();
@@ -39,10 +39,10 @@ public class MainFrame extends JFrame {
         // SmartGraph view:
         JComponent graphView = graphService.getViewPanel();
 
-        JPanel statsPanel = new JPanel(new GridLayout(1, 3, 10, 0));
-        statsPanel.add(lblClasses);
-        statsPanel.add(lblDeps);
-        statsPanel.add(progressBar);
+        JPanel dependenciesPanel = new JPanel(new GridLayout(1, 3, 0, 0));
+        dependenciesPanel.add(lblClasses);
+        dependenciesPanel.add(lblDeps);
+        dependenciesPanel.add(progressBar);
 
 
         // Dividi la finestra in log e grafo
@@ -55,11 +55,12 @@ public class MainFrame extends JFrame {
 
         add(topPanel, BorderLayout.NORTH);
         add(splitPane, BorderLayout.CENTER);
-        add(statsPanel, BorderLayout.SOUTH);
+        add(dependenciesPanel, BorderLayout.SOUTH);
 
+        setSize(800,800);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        pack();
         setLocationRelativeTo(null);
+        setVisible(true);
     }
 
     private void bindActions() {
@@ -121,7 +122,7 @@ public class MainFrame extends JFrame {
         // dell'Event Dispatch Thread, che è responsabile della gestione dell'interfaccia
         // grafica in Swing. In Swing, tutte le operazioni che modificano l'interfaccia
         // utente devono essere eseguite nel thread EDT per evitare problemi di concorrenza
-        SwingUtilities.invokeLater(() -> new MainFrame().setVisible(true));
+        SwingUtilities.invokeLater(() -> new MainFrame());//.setVisible(true));
     }
 
 }

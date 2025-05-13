@@ -36,7 +36,7 @@ public class GraphService {
     private void initFX() {
         smartPanel = new SmartGraphPanel<>(graph);
         smartPanel.setAutomaticLayout(true);
-        Scene scene = new Scene(smartPanel, 600, 400);
+        Scene scene = new Scene(smartPanel, 1000, 1000);
         fxPanel.setScene(scene);
         smartPanel.init();
         smartPanel.updateAndWait();
@@ -61,13 +61,12 @@ public class GraphService {
         invokeLater(() -> {
             // 1) verifica/crea i vertici (come prima)
             if (isNodeAbsent(source)) {
-                // System.out.println("Adding " + source);
                 graph.insertVertex(source);
             }
             if (isNodeAbsent(target)) {
-                // System.out.println("Adding " + target);
                 graph.insertVertex(target);
             }
+
             // 2) VERIFICA SE L’ARCO ESISTE GIÀ
             if (isEdgeAbsent(edgeLabel)) {
                 graph.insertEdge(source, target, edgeLabel);
