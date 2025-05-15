@@ -25,22 +25,23 @@ public class DependencyAnalyzer {
     }
 
     private void setupPipeline() {
+        log("Preparing pipeline... \n\n");
         fileSubject
                 // sposto l'esecuzione della pipeline su un thread I/O
                 .subscribeOn(Schedulers.io())
-                // doOnNext permette di eseguire un'azione ogni volta che un elemento passa
-                // attraverso il flusso reattivo, senza modificarlo o interrompere il flusso
+                /*
                 .doOnNext(path -> {
-                    System.out.println("Analyzing: " + path);
+                    log("\nFile: " + path);
                 })
+                */
                 .flatMap(path -> ParserService.parseFile(path)
-                        .doOnNext(listOfDeps -> filesProcessed++)
+                        .doOnNext(listDeps -> filesProcessed++)
                         .flatMapIterable(list ->list))
                 .subscribe(
                         depSubject::onNext, // value -> depSubject.onNext(value);
                         Throwable::printStackTrace,
                         () -> {
-                            System.out.println("Parsing completato");
+                            log("Parsing completato");
                             depSubject.onComplete();
                         }
                 );
@@ -49,20 +50,29 @@ public class DependencyAnalyzer {
                 .observeOn(Schedulers.computation())
                 .doOnNext(d -> {
                     dependenciesFound++;
-                    System.out.println("Found dependency: " + d);
+                    log("Found dependency in file " + d);
                 })
                 .subscribe(graphService::addDependency,
                         Throwable::printStackTrace,
-                        () -> System.out.println("Elaborazione delle dipendenze completata")
+                        () -> log("Elaborazione delle dipendenze completata")
                 );
     }
 
     public void processDirectory(Path root){
-        ParserService.listJavaFiles(root)
+        log("Sono entrato nel metodo processDirectory");
+        ParserService
+                .listJavaFiles(root) // restituisce un Observable<Path>
+                //.subscribeOn(Schedulers.io())
                 .subscribe(
-                        fileSubject::onNext,
+                        file -> {
+                            fileSubject.onNext(file);
+                            log("fileSubject.onNext(" + file + ")");
+                        },
                         Throwable::printStackTrace,
-                        fileSubject::onComplete
+                        () -> {
+                            fileSubject.onComplete();
+                            log("fileSubject.onComplete()");
+                        }
                 );
     }
 
@@ -79,6 +89,10 @@ public class DependencyAnalyzer {
 
     public int getDependenciesFound() {
         return dependenciesFound;
+    }
+
+    private void log (String msg) {
+        System.out.println("[" + Thread.currentThread().getName() + "]: " + msg);
     }
 }
 

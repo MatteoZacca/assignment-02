@@ -36,7 +36,7 @@ public class GraphService {
     private void initFX() {
         smartPanel = new SmartGraphPanel<>(graph);
         smartPanel.setAutomaticLayout(true);
-        Scene scene = new Scene(smartPanel, 1000, 1000);
+        Scene scene = new Scene(smartPanel, 600, 400);
         fxPanel.setScene(scene);
         smartPanel.init();
         smartPanel.updateAndWait();

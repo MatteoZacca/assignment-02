@@ -23,7 +23,9 @@ public class ParserService {
     public static Observable<Path> listJavaFiles(Path root) {
         return Observable.create(emitter -> {
             try (Stream<Path> files = Files.walk(root)) {
-                files.filter(f -> f.toString().endsWith(".java"))
+                log("Sono entrato nel metodo listJavaFiles");
+                files
+                        .filter(f -> f.toString().endsWith(".java"))
                         .forEach(emitter::onNext);
                 emitter.onComplete();
             } catch (IOException e) {
@@ -72,5 +74,9 @@ public class ParserService {
         }
 
         return deps;
+    }
+
+    private static void log (String msg) {
+        System.out.println("[" + Thread.currentThread().getName() + "]: " + msg);
     }
 }

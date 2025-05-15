@@ -1,19 +1,16 @@
 package pcd.ass02.reactive_programming;
 
-import io.reactivex.rxjava3.schedulers.Schedulers;
-
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
 
 public class MainFrame extends JFrame {
-    private final JButton btnSelect = new JButton("Seleziona Cartella");
+    private final JButton btnSelect = new JButton("Select Directory");
     private final JButton btnStart  = new JButton("Start");
     private final JTextArea logArea  = new JTextArea(10, 50);
-    private final JLabel lblClasses = new JLabel("Classi/Interfacce analizzate: ");
-    private final JLabel lblDeps    = new JLabel("Dipendenze trovate: ");
+    private final JLabel lblClasses = new JLabel("Classes / Interfaces analyzed: ");
+    private final JLabel lblDeps    = new JLabel("Dependencies found: ");
     private final JProgressBar progressBar = new JProgressBar();
 
     private final GraphService graphService = new GraphService();
@@ -27,29 +24,32 @@ public class MainFrame extends JFrame {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(5, 5 ));
+        logging("Sono entrato nel metodo initComponents");
+        setLayout(new BorderLayout(0, 5));
+
+        // Creation topPanel with 'Select Directory' button and 'Start button'
         JPanel topPanel = new JPanel();
         topPanel.add(btnSelect);
         topPanel.add(btnStart);
         btnStart.setEnabled(false);
-
         logArea.setEditable(false);
-        logArea.setBorder(new EmptyBorder(4, 4, 4, 4));
-        JScrollPane scrollPanel = new JScrollPane(logArea);
-        // SmartGraph view:
-        JComponent graphView = graphService.getViewPanel();
 
+        // Creation dependenciesPanel with JLabel 'Classes / Interfaces analyzed', JLabel
+        // 'Dependencies found' and progressBar
         JPanel dependenciesPanel = new JPanel(new GridLayout(1, 3, 0, 0));
         dependenciesPanel.add(lblClasses);
         dependenciesPanel.add(lblDeps);
         dependenciesPanel.add(progressBar);
 
 
-        // Dividi la finestra in log e grafo
+        JScrollPane scrollPanel = new JScrollPane(logArea);
+        JComponent smartGraphView = graphService.getViewPanel();
+
+        // Splitting window in two parts: left side for log and right side for dependencies view
         JSplitPane splitPane = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT,
                 scrollPanel,
-                graphView
+                smartGraphView
         );
         splitPane.setResizeWeight(0.3);
 
@@ -69,16 +69,18 @@ public class MainFrame extends JFrame {
     }
 
     private void onSelect(ActionEvent event) {
+        logging("Ho attivato il Listener e sono entrato nel metodo onSelect");
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             selectedRoot = chooser.getSelectedFile().toPath();
-            log("Cartella selezionata: " + selectedRoot);
+            log("Selected Root: " + selectedRoot);
             btnStart.setEnabled(true);
         }
     }
 
     private void onStart(ActionEvent event) {
+        logging("Ho attivato il Listener e sono entrato nel metodo onStart");
         btnStart.setEnabled(false); // disabilito il pulsante di avvio per evitare che l'utente
         // possa cliccarlo nuovamente mentre il programma è in esecuzione
         progressBar.setIndeterminate(true);
@@ -100,8 +102,8 @@ public class MainFrame extends JFrame {
 
         // Crea un timer che esegue un'azione ogni 200 ms
         new Timer(200, evt -> {
-            lblClasses.setText("Classi/Interfacce analizzate: " + analyzer.getFilesProcessed());
-            lblDeps.setText("Dipendenze trovate: " + analyzer.getDependenciesFound());
+            lblClasses.setText("Classes / Interfaces analyzed: " + analyzer.getFilesProcessed());
+            lblDeps.setText("Dependencies found: " + analyzer.getDependenciesFound());
             // quando progressBar non è più indeterminata, indicando che il processo è completato,
             // il timer si interrompe
             if (!progressBar.isIndeterminate()) ((Timer)evt.getSource()).stop();
@@ -115,6 +117,10 @@ public class MainFrame extends JFrame {
         SwingUtilities.invokeLater(() -> logArea.append(msg + "\n"));
     }
 
+    private void logging(String msg) {
+        System.out.println("[" + Thread.currentThread().getName() + "]: " + msg);
+    }
+
 
     public static void main(String[] args) {
         // SwingUtilities.invokeLater(Runnable runnable): questo metodo è utilizzato per
@@ -122,7 +128,7 @@ public class MainFrame extends JFrame {
         // dell'Event Dispatch Thread, che è responsabile della gestione dell'interfaccia
         // grafica in Swing. In Swing, tutte le operazioni che modificano l'interfaccia
         // utente devono essere eseguite nel thread EDT per evitare problemi di concorrenza
-        SwingUtilities.invokeLater(() -> new MainFrame());//.setVisible(true));
+        SwingUtilities.invokeLater(() -> new MainFrame());
     }
 
 }
