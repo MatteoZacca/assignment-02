@@ -29,6 +29,7 @@ public class ParserService {
                 files
                         .filter(f -> f.toString().endsWith(".java"))
                         .forEach(emitter::onNext);
+
                 emitter.onComplete();
             } catch (IOException e) {
                 emitter.onError(e);

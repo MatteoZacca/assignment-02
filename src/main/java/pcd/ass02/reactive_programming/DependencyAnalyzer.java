@@ -24,19 +24,46 @@ public class DependencyAnalyzer {
         setupPipeline();
     }
 
+
+    public void processDirectory(Path root){
+        log("Sono entrato nel metodo processDirectory");
+        ParserService
+                .listJavaFiles(root) // restituisce un Observable<Path>
+                .observeOn(Schedulers.io())
+                .subscribe(
+                        file -> {
+                            fileSubject.onNext(file);
+                            log("fileSubject.onNext(" + file + ")");
+                        },
+                        Throwable::printStackTrace,
+                        () -> {
+                            fileSubject.onComplete();
+                            log("fileSubject.onComplete()");
+                        }
+                );
+    }
+
+    public int getFilesProcessed() {
+        return filesProcessed;
+    }
+
+    public int getDependenciesFound() {
+        return dependenciesFound;
+    }
+
     private void setupPipeline() {
         log("Preparing pipeline... \n\n");
         fileSubject
                 // sposto l'esecuzione della pipeline su un thread I/O
-                .subscribeOn(Schedulers.io())
-                /*
-                .doOnNext(path -> {
-                    log("\nFile: " + path);
+                .observeOn(Schedulers.io())
+                .doOnNext(pathToFile -> {
+                    log("\nFile: " + pathToFile);
                 })
-                */
-                .flatMap(path -> ParserService.parseFile(path))
+                .flatMap(pathToFile -> ParserService.parseFile(pathToFile))
                 .doOnNext(listDeps -> filesProcessed++)
-                .flatMapIterable(list -> list)
+                // flatMapIterable(listDeps -> listDeps): prende ogni List<Dependency> emessa e la trasforma
+                // e la spezza in singoli elementi
+                .flatMapIterable(listDeps -> listDeps)
                 .subscribe(
                         depSubject::onNext, // value -> depSubject.onNext(value);
                         Throwable::printStackTrace,
@@ -57,39 +84,6 @@ public class DependencyAnalyzer {
                         Throwable::printStackTrace,
                         () -> log("Elaborazione delle dipendenze completata")
                 );
-    }
-
-    public void processDirectory(Path root){
-        log("Sono entrato nel metodo processDirectory");
-        ParserService
-                .listJavaFiles(root) // restituisce un Observable<Path>
-                //.subscribeOn(Schedulers.io())
-                .subscribe(
-                        file -> {
-                            fileSubject.onNext(file);
-                            log("fileSubject.onNext(" + file + ")");
-                        },
-                        Throwable::printStackTrace,
-                        () -> {
-                            fileSubject.onComplete();
-                            log("fileSubject.onComplete()");
-                        }
-                );
-    }
-
-    /*
-    public Observable<Dependency> depStream() {
-        return depSubject.hide();
-    }
-    */
-
-
-    public int getFilesProcessed() {
-        return filesProcessed;
-    }
-
-    public int getDependenciesFound() {
-        return dependenciesFound;
     }
 
     private void log (String msg) {

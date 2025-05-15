@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
+import java.sql.Time;
 
 public class MainFrame extends JFrame {
     private final JButton btnSelect = new JButton("Select Directory");
@@ -107,12 +108,14 @@ public class MainFrame extends JFrame {
 
 
     public static void main(String[] args) {
+
         // SwingUtilities.invokeLater(Runnable runnable): questo metodo è utilizzato per
         // assicurarsi che il codice passato come Runnable venga eseguito nel thread
         // dell'Event Dispatch Thread, che è responsabile della gestione dell'interfaccia
         // grafica in Swing. In Swing, tutte le operazioni che modificano l'interfaccia
         // utente devono essere eseguite nel thread EDT per evitare problemi di concorrenza
         SwingUtilities.invokeLater(() -> new MainFrame());
+
     }
 
 }
