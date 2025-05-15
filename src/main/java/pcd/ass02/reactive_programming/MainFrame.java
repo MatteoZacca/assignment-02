@@ -11,7 +11,6 @@ public class MainFrame extends JFrame {
     private final JTextArea logArea  = new JTextArea(10, 50);
     private final JLabel lblClasses = new JLabel("Classes / Interfaces analyzed: ");
     private final JLabel lblDeps    = new JLabel("Dependencies found: ");
-    private final JProgressBar progressBar = new JProgressBar();
 
     private final GraphService graphService = new GraphService();
     private final DependencyAnalyzer analyzer = new DependencyAnalyzer(graphService);
@@ -34,12 +33,11 @@ public class MainFrame extends JFrame {
         btnStart.setEnabled(false);
         logArea.setEditable(false);
 
-        // Creation dependenciesPanel with JLabel 'Classes / Interfaces analyzed', JLabel
-        // 'Dependencies found' and progressBar
+        // Creation dependenciesPanel with JLabel 'Classes / Interfaces analyzed' and JLabel
+        // 'Dependencies found'
         JPanel dependenciesPanel = new JPanel(new GridLayout(1, 3, 0, 0));
         dependenciesPanel.add(lblClasses);
         dependenciesPanel.add(lblDeps);
-        dependenciesPanel.add(progressBar);
 
 
         JScrollPane scrollPanel = new JScrollPane(logArea);
@@ -83,30 +81,16 @@ public class MainFrame extends JFrame {
         logging("Ho attivato il Listener e sono entrato nel metodo onStart");
         btnStart.setEnabled(false); // disabilito il pulsante di avvio per evitare che l'utente
         // possa cliccarlo nuovamente mentre il programma è in esecuzione
-        progressBar.setIndeterminate(true);
         log("Avvio analisi...");
 
         // Avvia l'analisi sulla directory selezionata sfruttando logica reattiva
         analyzer.processDirectory(selectedRoot);
         this.repaint();
 
-        /*
-        analyzer.depStream()              // espongo depSubject con un getter pubblico
-                .ignoreElements()                 // mi interessa solo onComplete
-                .observeOn(Schedulers.single())   // eseguo il callback su un thread qualunque
-                .subscribe(() -> SwingUtilities.invokeLater(() -> {
-                    progressBar.setIndeterminate(false);
-                    log("Elaborazione delle dipendenze completata");
-                }));
-         */
-
         // Crea un timer che esegue un'azione ogni 200 ms
         new Timer(200, evt -> {
             lblClasses.setText("Classes / Interfaces analyzed: " + analyzer.getFilesProcessed());
             lblDeps.setText("Dependencies found: " + analyzer.getDependenciesFound());
-            // quando progressBar non è più indeterminata, indicando che il processo è completato,
-            // il timer si interrompe
-            if (!progressBar.isIndeterminate()) ((Timer)evt.getSource()).stop();
         }).start();
     }
 

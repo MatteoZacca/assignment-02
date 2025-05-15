@@ -67,7 +67,7 @@ public class GraphService {
                 graph.insertVertex(target);
             }
 
-            // 2) VERIFICA SE L’ARCO ESISTE GIÀ
+            // 2) verifica se l'arco esiste già
             if (isEdgeAbsent(edgeLabel)) {
                 graph.insertEdge(source, target, edgeLabel);
             }

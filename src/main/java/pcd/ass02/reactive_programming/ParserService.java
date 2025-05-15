@@ -3,7 +3,9 @@ package pcd.ass02.reactive_programming;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 
 import io.reactivex.rxjava3.core.Observable;
@@ -35,7 +37,7 @@ public class ParserService {
     }
 
     /**
-     * Analizza un singolo file Java e restituisce un Single con la lista delle dipendenze trovate.
+     * Analizza un singolo file Java e restituisce un Observable con la lista delle dipendenze trovate.
      */
     public static Observable<List<Dependency>> parseFile(Path file) {
         return Observable.create(emitter -> {
@@ -58,12 +60,17 @@ public class ParserService {
     private static List<Dependency> extractDependencies(String source, CompilationUnit cu) {
         List<Dependency> deps = new ArrayList<>();
 
-        // 1) Import
+        // 1) Package declaration
+        cu.getPackageDeclaration()
+                .map(PackageDeclaration::getNameAsString)
+                .ifPresent(pkg -> deps.add(new Dependency(pkg, source)));
+
+        // 2) Import
         for (ImportDeclaration imp : cu.findAll(ImportDeclaration.class)) {
             deps.add(new Dependency(source, imp.getName().toString()));
         }
 
-        // 2) Extends / Implements
+        // 3) Extends / Implements
         for (ClassOrInterfaceDeclaration cid : cu.findAll(ClassOrInterfaceDeclaration.class)) {
             for(ClassOrInterfaceType ext : cid.getExtendedTypes()) {
                 deps.add(new Dependency(source, "Extends: " + ext.getName().toString()));

@@ -34,9 +34,9 @@ public class DependencyAnalyzer {
                     log("\nFile: " + path);
                 })
                 */
-                .flatMap(path -> ParserService.parseFile(path)
-                        .doOnNext(listDeps -> filesProcessed++)
-                        .flatMapIterable(list ->list))
+                .flatMap(path -> ParserService.parseFile(path))
+                .doOnNext(listDeps -> filesProcessed++)
+                .flatMapIterable(list -> list)
                 .subscribe(
                         depSubject::onNext, // value -> depSubject.onNext(value);
                         Throwable::printStackTrace,
@@ -52,7 +52,8 @@ public class DependencyAnalyzer {
                     dependenciesFound++;
                     log("Found dependency in file " + d);
                 })
-                .subscribe(graphService::addDependency,
+                .subscribe(
+                        graphService::addDependency,
                         Throwable::printStackTrace,
                         () -> log("Elaborazione delle dipendenze completata")
                 );
