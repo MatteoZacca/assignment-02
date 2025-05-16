@@ -65,20 +65,20 @@ public class ParserService {
         // 1) Package declaration
         cu.getPackageDeclaration()
                 .map(PackageDeclaration::getNameAsString)
-                .ifPresent(pkg -> deps.add(new Dependency(pkg, source)));//source)));
+                .ifPresent(pkg -> deps.add(new Dependency("package: '" + pkg + "'", "class: '"+ source + "'")));
 
         // 2) Import
         for (ImportDeclaration imp : cu.findAll(ImportDeclaration.class)) {
-            deps.add(new Dependency(source, imp.getName().toString()));
+            deps.add(new Dependency("class: '" + source + "'", "import: '" + imp.getName().toString() + "'"));
         }
 
         // 3) Extends / Implements
         for (ClassOrInterfaceDeclaration cid : cu.findAll(ClassOrInterfaceDeclaration.class)) {
             for(ClassOrInterfaceType ext : cid.getExtendedTypes()) {
-                deps.add(new Dependency(source, "Extends: " + ext.getName().toString()));
+                deps.add(new Dependency("class: '" + source + "'", "extends: '" + ext.getName().toString() + "'"));
             }
             for (ClassOrInterfaceType impl : cid.getImplementedTypes()) {
-                deps.add(new Dependency(source, "Implements: " + impl.getName().toString()));
+                deps.add(new Dependency("class: '" + source + "'", "implements: '" + impl.getName().toString() + "'"));
             }
         }
 

@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.nio.file.Path;
-import java.sql.Time;
 
 public class MainFrame extends JFrame {
     private final JButton btnSelect = new JButton("Select Directory");
