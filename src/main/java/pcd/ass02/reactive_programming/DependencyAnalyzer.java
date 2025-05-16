@@ -29,16 +29,17 @@ public class DependencyAnalyzer {
         log("Sono entrato nel metodo processDirectory");
         ParserService
                 .listJavaFiles(root) // restituisce un Observable<Path>
-                .observeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io())
                 .subscribe(
                         file -> {
                             fileSubject.onNext(file);
+                            // Debugging log
                             log("fileSubject.onNext(" + file + ")");
                         },
                         Throwable::printStackTrace,
                         () -> {
                             fileSubject.onComplete();
-                            log("fileSubject.onComplete()");
+                            log("listJavaFiles: fileSubject.onComplete()");
                         }
                 );
     }
@@ -56,19 +57,20 @@ public class DependencyAnalyzer {
         fileSubject
                 // sposto l'esecuzione della pipeline su un thread I/O
                 .observeOn(Schedulers.io())
+                // Debugging
                 .doOnNext(pathToFile -> {
                     log("\nFile: " + pathToFile);
                 })
-                .flatMap(pathToFile -> ParserService.parseFile(pathToFile))
+                .flatMap(ParserService::parseFile)
                 .doOnNext(listDeps -> filesProcessed++)
-                // flatMapIterable(listDeps -> listDeps): prende ogni List<Dependency> emessa e la trasforma
+                // flatMapIterable(listDeps -> listDeps): prende ogni List<Dependency> emessa
                 // e la spezza in singoli elementi
                 .flatMapIterable(listDeps -> listDeps)
                 .subscribe(
                         depSubject::onNext, // value -> depSubject.onNext(value);
                         Throwable::printStackTrace,
                         () -> {
-                            log("Parsing completato");
+                            log("Parsing completato :)");
                             depSubject.onComplete();
                         }
                 );
@@ -77,12 +79,13 @@ public class DependencyAnalyzer {
                 .observeOn(Schedulers.computation())
                 .doOnNext(d -> {
                     dependenciesFound++;
-                    log("Found dependency in file " + d);
+                    // Debugging log
+                    log("Found dependency in " + d);
                 })
                 .subscribe(
                         graphService::addDependency,
                         Throwable::printStackTrace,
-                        () -> log("Elaborazione delle dipendenze completata")
+                        () -> log("Elaborazione delle dipendenze completata :)")
                 );
     }
 

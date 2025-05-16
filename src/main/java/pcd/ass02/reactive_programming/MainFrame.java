@@ -9,7 +9,7 @@ import java.sql.Time;
 public class MainFrame extends JFrame {
     private final JButton btnSelect = new JButton("Select Directory");
     private final JButton btnStart  = new JButton("Start");
-    private final JTextArea logArea  = new JTextArea(10, 50);
+    private final JTextArea printArea  = new JTextArea(10, 50);
     private final JLabel lblClasses = new JLabel("Classes / Interfaces analyzed: ");
     private final JLabel lblDeps    = new JLabel("Dependencies found: ");
 
@@ -24,7 +24,7 @@ public class MainFrame extends JFrame {
     }
 
     private void initComponents() {
-        logging("Sono entrato nel metodo initComponents");
+        log("Sono entrato nel metodo initComponents");
         setLayout(new BorderLayout(0, 5));
 
         // Creation topPanel with 'Select Directory' button and 'Start button'
@@ -32,7 +32,7 @@ public class MainFrame extends JFrame {
         topPanel.add(btnSelect);
         topPanel.add(btnStart);
         btnStart.setEnabled(false);
-        logArea.setEditable(false);
+        printArea.setEditable(false);
 
         // Creation dependenciesPanel with JLabel 'Classes / Interfaces analyzed' and JLabel
         // 'Dependencies found'
@@ -41,7 +41,7 @@ public class MainFrame extends JFrame {
         dependenciesPanel.add(lblDeps);
 
 
-        JScrollPane scrollPanel = new JScrollPane(logArea);
+        JScrollPane scrollPanel = new JScrollPane(printArea);
         JComponent smartGraphView = graphService.getViewPanel();
 
         // Splitting window in two parts: left side for log and right side for dependencies view
@@ -68,21 +68,21 @@ public class MainFrame extends JFrame {
     }
 
     private void onSelect(ActionEvent event) {
-        logging("Ho attivato il Listener e sono entrato nel metodo onSelect");
+        log("Ho attivato il Listener e sono entrato nel metodo onSelect");
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             selectedRoot = chooser.getSelectedFile().toPath();
-            log("Selected Root: " + selectedRoot);
+            logArea("Selected Root: " + selectedRoot);
             btnStart.setEnabled(true);
         }
     }
 
     private void onStart(ActionEvent event) {
-        logging("Ho attivato il Listener e sono entrato nel metodo onStart");
+        log("Ho attivato il Listener e sono entrato nel metodo onStart");
         btnStart.setEnabled(false); // disabilito il pulsante di avvio per evitare che l'utente
         // possa cliccarlo nuovamente mentre il programma è in esecuzione
-        log("Avvio analisi...");
+        logArea("Avvio analisi...");
 
         // Avvia l'analisi sulla directory selezionata sfruttando logica reattiva
         analyzer.processDirectory(selectedRoot);
@@ -98,11 +98,11 @@ public class MainFrame extends JFrame {
     /**
      * Aggiunge una riga di log all'area di testo
      */
-    public void log(String msg) {
-        SwingUtilities.invokeLater(() -> logArea.append(msg + "\n"));
+    public void logArea(String msg) {
+        SwingUtilities.invokeLater(() -> printArea.append(msg + "\n"));
     }
 
-    private void logging(String msg) {
+    private void log(String msg) {
         System.out.println("[" + Thread.currentThread().getName() + "]: " + msg);
     }
 

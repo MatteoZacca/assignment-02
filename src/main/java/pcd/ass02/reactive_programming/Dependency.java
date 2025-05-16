@@ -1,7 +1,5 @@
 package pcd.ass02.reactive_programming;
 
-import java.util.Objects;
-
 public class Dependency {
     private final String source;
     private final String target;
@@ -20,15 +18,8 @@ public class Dependency {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Dependency that = (Dependency) obj;
-        return Objects.equals(source, that.source) && Objects.equals(target, that.target);
+    public String toString() {
+        return "'" + source + "'" + " -> " + "'" + target + "'";
     }
 
-    @Override
-    public String toString() {
-        return source + " -> " + target;
-    }
 }
