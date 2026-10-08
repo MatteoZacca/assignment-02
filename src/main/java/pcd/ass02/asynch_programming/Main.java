@@ -17,7 +17,7 @@ public class Main {
 
 	public static void main(String[] args) throws Exception  {
 
-		File file = new File("src/main/java/pcd/ass02/MyClass.java");
+		File file = new File("C://Users/zacca/Desktop/assignment-02/src/main/java/pcd/ass02/asynch_programming/MyClass.java");
 		
 		CompilationUnit cu = StaticJavaParser.parse(file);
 

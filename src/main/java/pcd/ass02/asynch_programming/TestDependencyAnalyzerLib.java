@@ -1,67 +1,64 @@
 package pcd.ass02.asynch_programming;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-
 import pcd.ass02.asynch_programming.DependencyAnalyzerLib.*;
 
 public class TestDependencyAnalyzerLib {
     public static void main(String[] args) throws Exception {
-        testGetClassDependencies("C:\\Users\\zacca\\Desktop\\MAGISTRALE INFORMATICA\\PRIMO ANNO\\SECONDO SEMESTRE\\Programmazione Concorrente e Distribuita\\Assignments\\Assignment#02\\assignment-02\\src\\main\\java\\pcd\\ass02\\MyClass.java");
-        testGetClassDependencies("C:\\Users\\zacca\\Desktop\\MAGISTRALE INFORMATICA\\PRIMO ANNO\\SECONDO SEMESTRE\\Programmazione Concorrente e Distribuita\\Assignments\\Assignment#02\\assignment-02\\src\\main\\java\\pcd\\ass02\\ValeYellow.java");
-        testGetClassDependencies("");
-
-        testGetPackageDependencies("C:\\Users\\zacca\\Desktop\\MAGISTRALE INFORMATICA\\PRIMO ANNO\\SECONDO SEMESTRE\\Programmazione Concorrente e Distribuita\\Assignments\\Assignment#02\\assignment-02\\src\\main\\java\\pcd\\ass02\\foopack");
-        testGetPackageDependencies(".");
-
-        testGetProjectDependencies("C:\\Users\\zacca\\Desktop\\MAGISTRALE INFORMATICA\\PRIMO ANNO\\SECONDO SEMESTRE\\Programmazione Concorrente e Distribuita\\Assignments\\Assignment#02\\assignment-02\\src\\main\\java\\pcd\\ass02\\foopack");
-        testGetProjectDependencies(".");
-    }
-
-    private static void testGetClassDependencies(final String filePath) {
         DependencyAnalyzerLib deps = new DependencyAnalyzerLib();
 
-        Future<ClassDepsReport> fut = deps.getClassDependencies(filePath);
-        fut
-                .onComplete((AsyncResult<ClassDepsReport> list) -> {
+        String basePath = "C:\\Users\\zacca\\Desktop\\assignment-02\\src\\main\\java\\pcd\\ass02\\asynch_programming\\";
+
+        Future<ClassDepsReport> f1 = testGetClassDependencies(deps, basePath + "MyClass.java");
+        Future<ClassDepsReport> f3 = testGetClassDependencies(deps, "C.java");
+
+        Future<PackageDepsReport> f4 = testGetPackageDependencies(deps, basePath + "foopack");
+        Future<PackageDepsReport> f5 = testGetPackageDependencies(deps, "foopack2");
+
+        Future<ProjectDepsReport> f7 = testGetProjectDependencies(deps, ".");
+
+        Future.join(f1, f3, f4, f5, f7)
+                .onComplete(res -> {
+                    log("All tests terminated. Closing Vert.x...");
+                    deps.close();
+                });
+    }
+
+    private static Future<ClassDepsReport> testGetClassDependencies(DependencyAnalyzerLib deps, final String filePath) {
+        return deps.getClassDependencies(filePath)
+                .onComplete(list -> {
                     if (list.succeeded()) {
-                        log("dependencies for [" + filePath + "] \n ---> " + list.result() + "\n\n");
-                    } else if (list.failed()) {
-                        log("failure for [" + filePath + "] \n ---> " + list.cause() + "\n\n");
+                        log("dependencies for [" + filePath + "] \n ---> " + list.result() + "\n");
+                    } else {
+                        log("failure for [" + filePath + "] \n ---> " + list.cause() + "\n");
                     }
                 });
     }
 
-    private static void testGetPackageDependencies(final String packagePath) {
-        DependencyAnalyzerLib deps = new DependencyAnalyzerLib();
-
-        Future<PackageDepsReport> fut = deps.getPackageDependencies(packagePath);
-        fut
-                .onComplete((AsyncResult<PackageDepsReport> list) -> {
+    private static Future<PackageDepsReport> testGetPackageDependencies(DependencyAnalyzerLib deps, final String packagePath) {
+        return deps.getPackageDependencies(packagePath)
+                .onComplete(list -> {
                     if (list.succeeded()) {
-                        log("dependencies for [" + packagePath + "] \n ---> " + list.result() + "\n\n");
-                    } else if (list.failed()) {
-                        log("failure for [" + packagePath + "] \n ---> " + list.cause() + "\n\n");
+                        log("dependencies for [" + packagePath + "] \n ---> " + list.result() + "\n");
+                    } else {
+                        log("failure for [" + packagePath + "] \n ---> " + list.cause() + "\n");
                     }
                 });
     }
 
-    private static void testGetProjectDependencies(final String projectPath) {
-        DependencyAnalyzerLib deps = new DependencyAnalyzerLib();
-
-        Future<ProjectDepsReport> fut = deps.getProjectDependencies(projectPath);
-        fut
-                .onComplete((AsyncResult<ProjectDepsReport> list) -> {
+    private static Future<ProjectDepsReport> testGetProjectDependencies(DependencyAnalyzerLib deps, final String projectPath) {
+        return deps.getProjectDependencies(projectPath)
+                .onComplete(list -> {
                     if (list.succeeded()) {
-                        log("dependencies for [" + projectPath + "] \n ---> " + list.result() + "\n\n");
-                    } else if (list.failed()) {
-                        log("failure for [" + projectPath + "] \n ---> " + list.cause() + "\n\n");
+                        log("dependencies for [" + projectPath + "] \n ---> " + list.result() + "\n");
+                    } else {
+                        log("failure for [" + projectPath + "] \n ---> " + list.cause() + "\n");
                     }
                 });
     }
 
     private static void log(String msg) {
-        System.out.println("[" + System.currentTimeMillis() + "] [" + Thread.currentThread() + "]: " + msg);
+        System.out.println("[" + System.currentTimeMillis() + "] [" + Thread.currentThread().getName() + "]: " + msg);
     }
 
 
