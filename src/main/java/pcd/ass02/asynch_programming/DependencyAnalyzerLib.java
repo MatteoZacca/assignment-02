@@ -37,22 +37,23 @@ public class DependencyAnalyzerLib {
 
     public Future<ClassDepsReport> getClassDependencies(String path) {
 
+        if (path == null || path.isBlank()) {
+            return Future.failedFuture(new IllegalArgumentException("Percorso vuoto o nullo"));
+        }
+
         FileSystem fs = vertx.fileSystem();
 
         return fs.exists(path)
                 .compose(exists -> exists ?
                         vertx.executeBlocking(promise -> {
                             try {
-                                if (path == null || path.isBlank()) {
-                                    throw new FileNotFoundException("Percorso vuoto");
-                                }
                                 ClassDepsReport report = parseClassSync(new File(path));
                                 promise.complete(report);
                             } catch (Exception ex) {
                                 promise.fail(ex);
                             }
                         })
-                        : Future.failedFuture(new IllegalArgumentException("File non trovato: " + path)));
+                        : Future.failedFuture(new IllegalArgumentException("File not found: " + path)));
     }
 
     public Future<PackageDepsReport> getPackageDependencies(String dirPath) {
@@ -75,14 +76,23 @@ public class DependencyAnalyzerLib {
 
     public Future<ProjectDepsReport> getProjectDependencies(String rootPath) {
 
-        return readDirRecursive(rootPath)
-                .compose(javaFiles -> {
-                    List<Future<ClassDepsReport>> futures = javaFiles.stream()
-                            .map(this::getClassDependencies)
+        return findDirectoriesRecursive(rootPath)
+                .compose(directories -> {
+                    List<Future<PackageDepsReport>> futures = directories.stream()
+                            .map(this::getPackageDependencies)
                             .collect(Collectors.toList());
                     return Future.all(futures);
                 })
-                .map(composite -> new ProjectDepsReport(composite.list()));
+                .map(composite -> {
+                    List<PackageDepsReport> allPackages = composite.list();
+
+                    // Remove empty packages
+                    List<PackageDepsReport> validPackages = allPackages.stream()
+                            .filter(p -> !p.classReports().isEmpty())
+                            .collect(Collectors.toList());
+
+                    return new ProjectDepsReport(validPackages);
+                });
     }
 
     // AST visit logic
@@ -140,47 +150,40 @@ public class DependencyAnalyzerLib {
         return new ClassDepsReport(new ArrayList<>(deps));
     }
 
-    // it returns all '.java' files starting from dirPath
-    private Future<List<String>> readDirRecursive(String dirPath) {
+
+    private Future<List<String>> findDirectoriesRecursive(String dirPath) {
         FileSystem fs = vertx.fileSystem();
 
-        return fs.readDir(dirPath)
-                .compose(entries -> {
-                    List<Future<List<String>>> futures = new ArrayList<>();
+        return fs.readDir(dirPath).compose(entries -> {
+            List<Future<List<String>>> futures = new ArrayList<>();
 
-                    for (String entry : entries) {
-                        if (entry.endsWith(".java")) {
-                            futures.add(Future.succeededFuture(List.of(entry)));
-                        } else {
-                            Future<List<String>> dirCheckFuture = fs.props(entry).compose(props -> {
-                                if (props.isDirectory()) {
-                                    // Recursive call
-                                    return readDirRecursive(entry);
-                                } else {
-                                    // Ignore other files
-                                    return Future.succeededFuture(new ArrayList<String>());
-                                }
-                            });
-                            futures.add(dirCheckFuture);
-                        }
+            for (String entry : entries) {
+                Future<List<String>> dirCheckFuture = fs.props(entry).compose(props -> {
+                    if (props.isDirectory()) {
+                        // if it is a directory make recursion
+                        return findDirectoriesRecursive(entry);
+                    } else {
+                        // if it is not a directory return an empty list
+                        return Future.succeededFuture(new ArrayList<String>());
                     }
-
-                    return Future.all(futures).map(composite -> {
-                        List<String> javaFiles = new ArrayList<>();
-                        composite.<List<String>>list().forEach(javaFiles::addAll);
-                        return javaFiles;
-                    });
                 });
+                futures.add(dirCheckFuture);
+            }
+
+            return Future.all(futures).map(composite -> {
+                List<String> directories = new ArrayList<>();
+                directories.add(dirPath);
+
+                composite.<List<String>>list().forEach(directories::addAll);
+                return directories;
+            });
+        });
     }
 
     public void close() {
         if (this.vertx != null) {
             this.vertx.close();
         }
-    }
-
-    private boolean isDirectory(String path) {
-        return new File(path).isDirectory();
     }
 
 }

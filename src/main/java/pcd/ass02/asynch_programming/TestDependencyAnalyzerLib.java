@@ -10,12 +10,12 @@ public class TestDependencyAnalyzerLib {
         String basePath = "C:\\Users\\zacca\\Desktop\\assignment-02\\src\\main\\java\\pcd\\ass02\\asynch_programming\\";
 
         Future<ClassDepsReport> f1 = testGetClassDependencies(deps, basePath + "MyClass.java");
-        Future<ClassDepsReport> f3 = testGetClassDependencies(deps, "C.java");
+        Future<ClassDepsReport> f3 = testGetClassDependencies(deps, basePath + "C.java");
 
         Future<PackageDepsReport> f4 = testGetPackageDependencies(deps, basePath + "foopack");
-        Future<PackageDepsReport> f5 = testGetPackageDependencies(deps, "foopack2");
+        Future<PackageDepsReport> f5 = testGetPackageDependencies(deps, basePath + "foopack2");
 
-        Future<ProjectDepsReport> f7 = testGetProjectDependencies(deps, ".");
+        Future<ProjectDepsReport> f7 = testGetProjectDependencies(deps, basePath);
 
         Future.join(f1, f3, f4, f5, f7)
                 .onComplete(res -> {
