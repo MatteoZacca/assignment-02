@@ -99,9 +99,13 @@ public class DependencyAnalyzerLib {
     private ClassDepsReport parseClassSync(File file) throws Exception {
         ParserConfiguration config = new ParserConfiguration()
                 .setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
-        StaticJavaParser.setConfiguration(config);
 
-        CompilationUnit cu = StaticJavaParser.parse(file);
+        // // Istanzio un nuovo JavaParser locale (Thread-Safe), invece di usare quello Statico
+        com.github.javaparser.JavaParser parser = new com.github.javaparser.JavaParser(config);
+
+        // Parsing
+        CompilationUnit cu = parser.parse(file).getResult()
+                .orElseThrow(() -> new Exception("Error parsing file: " + file.getName()));
 
         // Using a Set to avoid inserting duplicated dependencies
         Set<String> deps = new HashSet<>();
